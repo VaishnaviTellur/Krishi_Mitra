@@ -2,3 +2,10 @@ Hello
 Hello
 Hello
 Hello
+<<<<<<< HEAD
+=======
+Hello
+Hello
+Hello
+>>>>>>> BR-102
+Hello
