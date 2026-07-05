@@ -25,13 +25,13 @@ jobs:
 
       - name: Install frontend deps
         run: |
-          cd OneDrive/Desktop/agri_voice/frontend
+          cd frontend
           npm ci
           npm run build
 
       - name: Install backend deps
         run: |
-          cd OneDrive/Desktop/agri_voice/backend
+          cd backend
           npm ci
 
       - name: Set up Python
@@ -41,7 +41,7 @@ jobs:
 
       - name: Install and run ai-service for tests
         run: |
-          cd OneDrive/Desktop/agri_voice/ai-service
+          cd ai-service
           pip install -r requirements.txt
           python scripts/download_demo_model.py || true
           nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
-          path: OneDrive/Desktop/agri_voice/frontend/dist
+          path: frontend/dist
