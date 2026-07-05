@@ -1,0 +1,62 @@
+name: CI (root)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend deps
+        run: |
+          cd OneDrive/Desktop/agri_voice/frontend
+          npm ci
+          npm run build
+
+      - name: Install backend deps
+        run: |
+          cd OneDrive/Desktop/agri_voice/backend
+          npm ci
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install and run ai-service for tests
+        run: |
+          cd OneDrive/Desktop/agri_voice/ai-service
+          pip install -r requirements.txt
+          python scripts/download_demo_model.py || true
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          for i in {1..15}; do
+            if curl -sSf http://localhost:8000/ >/dev/null; then
+              echo "ai-service is up"
+              break
+            fi
+            echo "waiting for ai-service... ($i)"
+            sleep 1
+          done
+          python scripts/test_predict.py
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: OneDrive/Desktop/agri_voice/frontend/dist
